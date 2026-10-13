@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { Product } from './components/product';
 import { ProductCard } from './components/product-card/product-card';
 import { Menu } from './components/menu/menu';
@@ -11,8 +11,8 @@ import { Menu } from './components/menu/menu';
 })
 export class App {
   isHovered = false;
-  total = 0;
-  products: Product[] = [
+  total = signal<number>(0);
+  products = signal<Product[]>([
     {
       id: 'welsch',
       title: 'Coding the welsch',
@@ -45,18 +45,24 @@ export class App {
       price: 19,
       stock: 2,
     },
-  ];
+  ]);
 
-  get hasProductsInStock(): boolean {
-    return this.products.some(({stock}) => stock > 0);
-  }
+  hasProductsInStock = computed<boolean>(() => this.products().some(({ stock }) => stock > 0));
 
   toggleIsHovered() {
     this.isHovered = !this.isHovered;
   }
 
   ajouterPanier(product: Product) {
-    this.total += product.price;
-    product.stock -= 1;
+    this.total.update((val) => (val += product.price));
+
+    this.products.update((products) =>
+      products.map((produit) => {
+        if (produit.id === product.id) {
+          produit.stock--;
+        }
+        return produit;
+      }),
+    );
   }
 }
