@@ -47,6 +47,10 @@ export class App {
     },
   ];
 
+  get hasProductsInStock(): boolean {
+    return this.products.some(({stock}) => stock > 0);
+  }
+
   toggleIsHovered() {
     this.isHovered = !this.isHovered;
   }
