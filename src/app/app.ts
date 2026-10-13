@@ -1,7 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Product } from './components/product';
 import { ProductCard } from './components/product-card/product-card';
 import { Menu } from './components/menu/menu';
+import { CatalogService } from './services/catalog-service';
+import { BasketService } from './services/basket-service';
 
 @Component({
   imports: [ProductCard, Menu],
@@ -10,59 +12,20 @@ import { Menu } from './components/menu/menu';
   templateUrl: './app.html',
 })
 export class App {
-  isHovered = false;
-  total = signal<number>(0);
-  products = signal<Product[]>([
-    {
-      id: 'welsch',
-      title: 'Coding the welsch',
-      description: 'Tee-shirt col rond - Homme',
-      photo: '/assets/coding-the-welsch.jpg',
-      price: 20,
-      stock: 2,
-    },
-    {
-      id: 'world',
-      title: 'Coding the world',
-      description: 'Tee-shirt col rond - Homme',
-      photo: '/assets/coding-the-world.jpg',
-      price: 18,
-      stock: 1,
-    },
-    {
-      id: 'vador',
-      title: 'Duck Vador',
-      description: 'Tee-shirt col rond - Femme',
-      photo: '/assets/coding-the-stars.jpg',
-      price: 21,
-      stock: 2,
-    },
-    {
-      id: 'snow',
-      title: 'Coding the snow',
-      description: 'Tee-shirt col rond - Femme',
-      photo: '/assets/coding-the-snow.jpg',
-      price: 19,
-      stock: 2,
-    },
-  ]);
+  private _catalogService = inject(CatalogService);
+  private _basketService = inject(BasketService);
 
-  hasProductsInStock = computed<boolean>(() => this.products().some(({ stock }) => stock > 0));
+  isHovered = false;
+  total = this._basketService.total;
+  products = this._catalogService.products;
+  hasProductsInStock = this._catalogService.hasProductsInStock;
 
   toggleIsHovered() {
     this.isHovered = !this.isHovered;
   }
 
-  ajouterPanier(product: Product) {
-    this.total.update((val) => (val += product.price));
-
-    this.products.update((products) =>
-      products.map((produit) => {
-        if (produit.id === product.id) {
-          produit.stock--;
-        }
-        return produit;
-      }),
-    );
+  ajouterPanier({price, title, id}: Product) {
+    this._basketService.addItem({id, price, title});
+    this._catalogService.decreaseStock(id);
   }
 }
