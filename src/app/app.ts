@@ -4,9 +4,10 @@ import { ProductCard } from './components/product-card/product-card';
 import { Menu } from './components/menu/menu';
 import { CatalogService } from './services/catalog-service';
 import { BasketService } from './services/basket-service';
+import { CurrencyPipe } from '@angular/common';
 
 @Component({
-  imports: [ProductCard, Menu],
+  imports: [ProductCard, Menu, CurrencyPipe],
   selector: 'app-root',
   styleUrl: './app.css',
   templateUrl: './app.html',
