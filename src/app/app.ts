@@ -1,10 +1,15 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { CurrencyPipe } from '@angular/common';
+import {
+  Component,
+  inject,
+  OnDestroy,
+  OnInit
+} from '@angular/core';
+import { Menu } from './components/menu/menu';
 import { Product } from './components/product';
 import { ProductCard } from './components/product-card/product-card';
-import { Menu } from './components/menu/menu';
-import { CatalogService } from './services/catalog-service';
 import { BasketService } from './services/basket-service';
-import { CurrencyPipe } from '@angular/common';
+import { CatalogService } from './services/catalog-service';
 
 @Component({
   imports: [ProductCard, Menu, CurrencyPipe],
@@ -12,7 +17,7 @@ import { CurrencyPipe } from '@angular/common';
   styleUrl: './app.css',
   templateUrl: './app.html',
 })
-export class App {
+export class App implements OnInit {
   private _catalogService = inject(CatalogService);
   private _basketService = inject(BasketService);
 
@@ -21,12 +26,16 @@ export class App {
   products = this._catalogService.products;
   hasProductsInStock = this._catalogService.hasProductsInStock;
 
+  ngOnInit(): void {
+    this._catalogService.fetchProducts().subscribe();
+  }
+
   toggleIsHovered() {
     this.isHovered = !this.isHovered;
   }
 
-  ajouterPanier({price, title, id}: Product) {
-    this._basketService.addItem({id, price, title});
+  ajouterPanier({ id }: Product) {
+    this._basketService.addItem(id).subscribe();
     this._catalogService.decreaseStock(id);
   }
 }
